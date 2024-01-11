@@ -1,34 +1,37 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { fetchSingleblog } from "../utils/util";
+import { fetchSingleblog, formatDate } from "../utils/util";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../App.css";
 import SwipeableTemporaryDrawer from "../component/Drawer";
 
-export const Details = () => {
+export const Details = ({post}) => {
   const { slug } = useParams();
   const [data, setData] = useState(null);
+  // const {feature_img,created_date,image,published_date,tag,text,title} = data
   const [isOpen, setIsOpen] = React.useState(false)
     const toggleDrawer = () => {
         setIsOpen((prevState) => !prevState)
     }
   useEffect(() => {
     fetchSingleblog(slug).then((res) => {
-      console.log(res);
-    });
+      // console.log(res);
+      setData(res)
+    }); 
   }, [slug]);
+  // console.log(data)
   return (
     <div className="w-50 m-auto">
       <div className="">
         <img
           width="700"
           height="438"
-          src="https://miro.medium.com/v2/resize:fit:828/format:webp/1*oplHVC2Izs7S7vPTVs_XZg.png"
+          src={data?data.feature_img:""}
           alt=""
         />
       </div>
       <p className="fs-2 fw-bold mt-3 w-75 custom-roboto">
-        How I Setup My MacBook for Development (2024 Version)
+        {data?data.title:""}
       </p>
       <div className="d-flex  mt-4">
         <img
@@ -40,8 +43,8 @@ export const Details = () => {
         />
         <div className="d-flex flex-column mx-3 gap-0 h-25">
           <p className="custom-Geologica fs-6">
-            Crizant Lai <br />
-            Publised in 23 Dec, 2023
+            {data?data.auther.first_name:""} <br />
+            Publised in {data?formatDate(data.published_date):""}
           </p>
         </div>
       </div>
@@ -76,13 +79,14 @@ export const Details = () => {
         </div>
         <hr />
       </div>
-      <p className="custom-pt fs-3 lh-3 fw-medium" >
+      {data&& <p className='custom-pt fs-3 lh-3 fw-medium' style={{height:'30px'}} dangerouslySetInnerHTML={{ __html: data.text }}></p>}
+      {/* <p className="custom-pt fs-3 lh-3 fw-medium" >
         In their recent video, they mentioned that they are not just creating a
         browser and will reintroduce themselves to the world. I’m thrilled about
         their upcoming event on January 30, 2024, where it appears they have
         something significant to announce. The anticipation is building, and I
         can’t wait to find out what they have in store for us!
-      </p>
+      </p> */}
     </div>
   );
 };

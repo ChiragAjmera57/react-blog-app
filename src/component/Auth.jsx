@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { login, signUp } from "../utils/util";
 import { Alert, Snackbar } from "@mui/material";
+import { useAuth } from "./AuthContext";
 
-export const Auth = ({closeModal}) => {
-  const [AuthType, setType] = useState(false);
+export const Auth = ({closeModal,succesTrue,data}) => {
+  const [AuthType, setType] = useState(data);
   const[error,setError] = useState(false)
   const[success,setSucces] = useState(false)
+  const {user,userLogin,logout} = useAuth()
   const [registerState, setRegisterState] = useState({
     username: "",
     email: "",
@@ -32,19 +34,20 @@ export const Auth = ({closeModal}) => {
   const handleLogin = (e)=>{
     e.preventDefault()
     login(loginState).then((res)=>{
-      setSucces(true)
-      console.log(res)
+      succesTrue()
+      // console.log(res)
       setError(false)
       const {token,user} = res
       const {id} = user
-      console.log(id)
+      // console.log(id)
       localStorage.setItem("token-react-blog",token)
       localStorage.setItem("user-react-blog",JSON.stringify(user))
       localStorage.setItem("id-user-react-blog",JSON.stringify(id))
-
+      userLogin()
+      closeModal()
     }).catch((err)=>{
       console.log(err)
-      setSucces(false)
+      
       setError(err.message)
     })
   }
@@ -223,12 +226,7 @@ export const Auth = ({closeModal}) => {
           {error?error:null}
         </Alert>
       </Snackbar>
-      {AuthType?<Snackbar
-      open={success} autoHideDuration={4000} onClose={()=>setSucces(false)}>
-        <Alert onClose={()=>setSucces(false)} severity="success" sx={{ width: '100%' }}>
-          User Succesfully logged
-        </Alert>
-      </Snackbar>:<Snackbar
+      {!AuthType&&<Snackbar
       open={success} autoHideDuration={4000} onClose={()=>setSucces(false)}>
         <Alert onClose={()=>setSucces(false)} severity="success" sx={{ width: '100%' }}>
           Proceed to login

@@ -6,7 +6,7 @@ export const Dashboard = () => {
     const[data,setData] = useState(null)
     useEffect(()=>{
       fetchBlog().then((res)=>{
-        console.log(res.results)
+        // console.log(res.results)
         setData(res.results)
       })
     },[])

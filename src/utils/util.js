@@ -87,7 +87,7 @@ export function formatDate(inputDate) {
       return response.json();
     })
     .then(data => {
-      console.log('Sign up successful:', data);
+      // console.log('Sign up successful:', data);
       return data;
     })
     .catch(error => {
@@ -120,7 +120,7 @@ export function formatDate(inputDate) {
       return response.json();
     })
     .then(data => {
-      console.log('Login successful:', data);
+      // console.log('Login successful:', data);
       return data;
     })
     .catch(error => {
@@ -129,4 +129,88 @@ export function formatDate(inputDate) {
     });
   }
 
+  export function getUserById(id) {
+    return new Promise((resolve, reject) => {
+      if (!id) {
+        reject(new Error("Please provide a user ID."));
+      }
+      const headers = new Headers({
+        'Content-Type': 'application/json',
+      });
+      const request = new Request(`http://127.0.0.1:8000/api/users/${id}/`, {
+        method: 'GET', // or 'POST', 'PUT', etc. depending on your use case
+        headers: headers
+      });
+  
+      fetch(request)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Failed to fetch user data for ID ${id}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          resolve(data);
+        })
+        .catch(error => {
+          console.error(`Error fetching user data for ID ${id}:`, error.message);
+          reject(error);
+        });
+    });
+  }
+
+  export function fetchTags(url) {
+    return new Promise((resolve, reject) => {
+      fetch(url)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          resolve(data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  }
+  
+  export function postData(postData) {
+    return new Promise((resolve, reject) => {
+      if (!postData || !postData.title || !postData.text || !postData.published_date || !postData.image || !postData.feature_img || !postData.post_cat || !postData.tags) {
+        reject(new Error('Invalid or missing data'));
+        return;
+      }
+      const{title,text,published_date,image,feature_img,post_cat,tags} = postData
+      postData.tags = [Number(tags)]
+      const formData = new FormData();
+      for (const key in postData) {
+        formData.append(key, postData[key]);
+      }
+      
+      fetch('http://127.0.0.1:8000/api/posts/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: formData,
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          resolve(data);
+        })
+        .catch(error => {
+          reject(error);
+        });
+    });
+  }
+
+  
   
