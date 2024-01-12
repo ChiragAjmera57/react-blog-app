@@ -4,7 +4,7 @@ import { useEffect } from "react";
 const Protected = ({children}) => {
 const {user,userLogin,logout} = useAuth()
 useEffect(()=>{
-  console.log(user,"user...")
+  // console.log(user,"user...")
 },[user])
   if (!user) {
     return <Navigate to="/" replace />;

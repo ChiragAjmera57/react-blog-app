@@ -4,20 +4,62 @@ import { fetchSingleblog, formatDate } from "../utils/util";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../App.css";
 import SwipeableTemporaryDrawer from "../component/Drawer";
+import { Alert, Snackbar } from "@mui/material";
 
-export const Details = ({post}) => {
+export const Details = ({ post }) => {
   const { slug } = useParams();
   const [data, setData] = useState(null);
-  // const {feature_img,created_date,image,published_date,tag,text,title} = data
-  const [isOpen, setIsOpen] = React.useState(false)
-    const toggleDrawer = () => {
-        setIsOpen((prevState) => !prevState)
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [audioError, setAudioError] = useState(false);
+  const toggleDrawer = () => {
+    setIsOpen((prevState) => !prevState);
+  };
+  const handleSvgClick = () => {
+    setIsAudioPlaying(!isAudioPlaying);
+  };
+  useEffect(() => {
+    let audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    let audioBufferSourceNode = null;
+
+    const playAudio = async () => {
+      try {
+        const response = await fetch(data?.audio_file);
+        const arrayBuffer = await response.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+        audioBufferSourceNode = audioContext.createBufferSource();
+        audioBufferSourceNode.buffer = audioBuffer;
+
+        audioBufferSourceNode.connect(audioContext.destination);
+
+        audioBufferSourceNode.start();
+        setAudioError(false);
+      } catch (error) {
+        setAudioError(true);
+        console.error("Error loading audio:", error);
+      }
+    };
+
+    if (isAudioPlaying) {
+      playAudio();
+    } else {
+      if (audioBufferSourceNode) {
+        audioBufferSourceNode.stop();
+      }
     }
+
+    return () => {
+      if (audioContext) {
+        audioContext.close();
+      }
+    };
+  }, [isAudioPlaying, data?.audio_file]);
   useEffect(() => {
     fetchSingleblog(slug).then((res) => {
-      // console.log(res);
-      setData(res)
-    }); 
+      console.log(res);
+      setData(res);
+    });
   }, [slug]);
   // console.log(data)
   return (
@@ -26,12 +68,12 @@ export const Details = ({post}) => {
         <img
           width="700"
           height="438"
-          src={data?data.feature_img:""}
+          src={data ? data.feature_img : ""}
           alt=""
         />
       </div>
       <p className="fs-2 fw-bold mt-3 w-75 custom-roboto">
-        {data?data.title:""}
+        {data ? data.title : ""}
       </p>
       <div className="d-flex  mt-4">
         <img
@@ -43,25 +85,48 @@ export const Details = ({post}) => {
         />
         <div className="d-flex flex-column mx-3 gap-0 h-25">
           <p className="custom-Geologica fs-6">
-            {data?data.auther.first_name:""} <br />
-            Publised in {data?formatDate(data.published_date):""}
+            {data?.auther ? data.auther.first_name : "Geologica"} <br />
+            Publised in {data ? formatDate(data.published_date) : ""}
           </p>
         </div>
       </div>
       <div>
         <hr className="hr hr-blurry" />
         <div className="d-flex justify-content-between w-75 m-auto">
-         
           <SwipeableTemporaryDrawer />
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path
-              fillRule="evenodd"
-              clipRule="evenodd"
-              d="M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0zm9-10a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm3.38 10.42l-4.6 3.06a.5.5 0 0 1-.78-.41V8.93c0-.4.45-.63.78-.41l4.6 3.06c.3.2.3.64 0 .84z"
-              fill="currentColor"
-            ></path>
-            <title>Listen</title>
-          </svg>
+          {isAudioPlaying ? (
+            <svg
+              width="24"
+              height="24"  
+              viewBox="0 0 24 24"
+              fill="none"
+              onClick={handleSvgClick}
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M14 2v20h-4V2h4zM4 2h4v20H4V2z"
+                fill="currentColor"
+              ></path>
+              <title>Pause</title>
+            </svg>
+          ) : (
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              onClick={handleSvgClick}
+            >
+              <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0zm9-10a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm3.38 10.42l-4.6 3.06a.5.5 0 0 1-.78-.41V8.93c0-.4.45-.63.78-.41l4.6 3.06c.3.2.3.64 0 .84z"
+                fill="currentColor"
+              ></path>
+              <title>Listen</title>
+            </svg>
+          )}
           <svg
             title="chirag"
             width="24"
@@ -79,14 +144,25 @@ export const Details = ({post}) => {
         </div>
         <hr />
       </div>
-      {data&& <p className='custom-pt fs-3 lh-3 fw-medium' style={{height:'30px'}} dangerouslySetInnerHTML={{ __html: data.text }}></p>}
-      {/* <p className="custom-pt fs-3 lh-3 fw-medium" >
-        In their recent video, they mentioned that they are not just creating a
-        browser and will reintroduce themselves to the world. I’m thrilled about
-        their upcoming event on January 30, 2024, where it appears they have
-        something significant to announce. The anticipation is building, and I
-        can’t wait to find out what they have in store for us!
-      </p> */}
+      {data && (
+        <p
+          className="custom-pt fs-3 lh-3 fw-medium mb-5 "
+          dangerouslySetInnerHTML={{ __html: data.text }}
+        ></p>
+      )}
+      <Snackbar
+        open={audioError}
+        autoHideDuration={4000}
+        onClose={() => setAudioError(false)}
+      >
+        <Alert
+          onClose={() => setAudioError(false)}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Post Created
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

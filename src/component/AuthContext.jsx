@@ -6,13 +6,14 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user-react-blog")));
-  console.log(user,"....user")
+  // console.log(user,"....user")
   const userLogin = () => {
     setUser(JSON.parse(localStorage.getItem("user-react-blog")));
   };
 
   const logout = () => {
     setUser(null);
+    localStorage.clear()
   };
   useEffect(()=>{
     const id = localStorage.getItem("id-user-react-blog")

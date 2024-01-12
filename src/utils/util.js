@@ -179,25 +179,30 @@ export function formatDate(inputDate) {
   
   export function postData(postData) {
     return new Promise((resolve, reject) => {
-      if (!postData || !postData.title || !postData.text || !postData.published_date || !postData.image || !postData.feature_img || !postData.post_cat || !postData.tags) {
+      if (!postData || !postData.title || !postData.author || !postData.text || !postData.published_date || !postData.image || !postData.feature_img || !postData.post_cat || !postData.tags) {
         reject(new Error('Invalid or missing data'));
         return;
       }
-      const{title,text,published_date,image,feature_img,post_cat,tags} = postData
+      const{tags} = postData
       postData.tags = [Number(tags)]
       const formData = new FormData();
       for (const key in postData) {
+        
         formData.append(key, postData[key]);
       }
       
       fetch('http://127.0.0.1:8000/api/posts/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          // 'Content-Type': 'application/json',
+          // 'Content-Type': 'multipart/form-data; ',
+          // 'enctype': 'multipart/form-data',
         },
+        // enctype: 'multipart/form-data',
         body: formData,
       })
         .then(response => {
+          
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }

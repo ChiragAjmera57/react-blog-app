@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { fetchCategory, fetchTags, postData } from "../utils/util";
+import { Alert, Snackbar } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 
 export const AddPost = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     title: "",
     text: "",
@@ -10,10 +13,14 @@ export const AddPost = () => {
     feature_img: null,
     post_cat: "",
     tags: "",
+    author:JSON.parse(localStorage.getItem('id-user-react-blog'))
   });
   const [tag,setTags] = useState(null)
   const [category,setCategory] = useState(null)
   const [change,setChange] = useState(false)
+  const[createdSlug,setCreatedSlug] = useState(null)
+  const[succes,setSucces] = useState(false)
+  const[error,setError] = useState(false)
   const handleChange = (e) => {
     const { name, value } = e.target;
     // console.log(name,value)
@@ -29,13 +36,24 @@ export const AddPost = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // console.log(formData);
     postData(formData).then((res)=>{
+      setSucces(true)
+      setError(false)
+      setCreatedSlug(res.post_slug)
+     
     }).catch((err)=>{
+      setSucces(false)
+      setError(true)
         console.log(err)
     })
   };
-  
+  useEffect(()=>{
+   if(createdSlug){
+    setTimeout(() => {
+      navigate(`/post/${createdSlug}`)
+    }, 1500);
+   }
+  },[createdSlug])
 useEffect(()=>{
     fetchTags("http://127.0.0.1:8000/api/tags/").then((res)=>{
         // console.log(res)
@@ -122,6 +140,18 @@ useEffect(()=>{
           value="Submit"
         ></input>
       </form>
+      <Snackbar
+      open={succes} autoHideDuration={4000} onClose={()=>setSucces(false)}>
+        <Alert onClose={()=>setSucces(false)} severity="success" sx={{ width: '100%' }}>
+          Post Created
+        </Alert>
+      </Snackbar>
+      <Snackbar
+      open={error} autoHideDuration={4000} onClose={()=>setError(false)}>
+        <Alert onClose={()=>setError(false)} severity="error" sx={{ width: '100%' }}>
+          Post not created!
+        </Alert>
+      </Snackbar>
     </div>
   );
 };

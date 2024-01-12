@@ -23,7 +23,7 @@ export const Card = ({post}) => {
       <div>
         <div className=''>
           <div className='d-flex flex-row m-auto'>
-            {image?<img src={image} width='24' height='24' className='mx-1 rounded-5'  alt="" srcset="" />:<img width='24' height='24' className='rounded-5 mx-1' src='https://miro.medium.com/v2/resize:fill:30:30/1*QADoVQ9X8JvC9DL_2W_LIw.jpeg' />}
+            {image?<img src={image} width='24' height='24' className='mx-1 rounded-5'  alt="" srcSet="" />:<img width='24' height='24' className='rounded-5 mx-1' src='https://miro.medium.com/v2/resize:fill:30:30/1*QADoVQ9X8JvC9DL_2W_LIw.jpeg' />}
             
             <p >{auther?.username}</p>
             <p className='mx-1'>.</p>
