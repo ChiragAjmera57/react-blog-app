@@ -6,6 +6,14 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(JSON.parse(localStorage.getItem("user-react-blog")));
+  const[comments,setComments] = useState(null)
+  const[currentPost,setCurrentPost] = useState(null)
+  const commentToSet = (commnetData)=>{
+    setComments(commnetData)
+  }
+  const setPost = (currentPostData)=>{
+    setCurrentPost(currentPostData)
+  }
   // console.log(user,"....user")
   const userLogin = () => {
     setUser(JSON.parse(localStorage.getItem("user-react-blog")));
@@ -26,7 +34,7 @@ export const AuthProvider = ({ children }) => {
   },[])
 
   return (
-    <AuthContext.Provider value={{ user, userLogin, logout }}>
+    <AuthContext.Provider value={{ user, userLogin, logout,commentToSet,comments,currentPost,setPost }}>
       {children}
     </AuthContext.Provider>
   );

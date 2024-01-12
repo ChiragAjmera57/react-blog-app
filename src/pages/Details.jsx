@@ -1,20 +1,29 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { fetchSingleblog, formatDate } from "../utils/util";
+import { useNavigate, useParams } from "react-router-dom";
+import { fetchSingleblog, formatDate, organizeComments } from "../utils/util";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "../App.css";
 import SwipeableTemporaryDrawer from "../component/Drawer";
 import { Alert, Snackbar } from "@mui/material";
+import { common } from "@mui/material/colors";
+import { useAuth } from "../component/AuthContext";
 
 export const Details = ({ post }) => {
   const { slug } = useParams();
+  const navigate = useNavigate()
+  const {user, userLogin, logout,commentToSet,comments,currentPost,setPost } = useAuth()
   const [data, setData] = useState(null);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [isOpen, setIsOpen] = React.useState(false);
   const [audioError, setAudioError] = useState(false);
+  const CurrentUserId = localStorage.getItem('id-user-react-blog')
   const toggleDrawer = () => {
     setIsOpen((prevState) => !prevState);
   };
+  const handleToEdit = ()=>{
+    setPost(data)
+    navigate(`/post/edit/${data.post_slug}`)
+  }
   const handleSvgClick = () => {
     setIsAudioPlaying(!isAudioPlaying);
   };
@@ -32,7 +41,9 @@ export const Details = ({ post }) => {
         audioBufferSourceNode.buffer = audioBuffer;
 
         audioBufferSourceNode.connect(audioContext.destination);
-
+        audioBufferSourceNode.onended = () => {
+          handleSvgClick()
+      };
         audioBufferSourceNode.start();
         setAudioError(false);
       } catch (error) {
@@ -44,9 +55,9 @@ export const Details = ({ post }) => {
     if (isAudioPlaying) {
       playAudio();
     } else {
-      if (audioBufferSourceNode) {
-        audioBufferSourceNode.stop();
-      }
+      // if (audioBufferSourceNode) {
+      //   audioBufferSourceNode.stop();
+      // }
     }
 
     return () => {
@@ -59,6 +70,8 @@ export const Details = ({ post }) => {
     fetchSingleblog(slug).then((res) => {
       console.log(res);
       setData(res);
+      const commentAndReply = organizeComments(res.comments)
+      commentToSet(commentAndReply)
     });
   }, [slug]);
   // console.log(data)
@@ -141,6 +154,7 @@ export const Details = ({ post }) => {
               fill="currentColor"
             ></path>
           </svg>
+          {data?.author==CurrentUserId&& <svg onClick={()=>handleToEdit()}  width="24" height="24" viewBox="0 0 24 24" fill="none" aria-label="Write"><path d="M14 4a.5.5 0 0 0 0-1v1zm7 6a.5.5 0 0 0-1 0h1zm-7-7H4v1h10V3zM3 4v16h1V4H3zm1 17h16v-1H4v1zm17-1V10h-1v10h1zm-1 1a1 1 0 0 0 1-1h-1v1zM3 20a1 1 0 0 0 1 1v-1H3zM4 3a1 1 0 0 0-1 1h1V3z" fill="currentColor"></path><path d="M17.5 4.5l-8.46 8.46a.25.25 0 0 0-.06.1l-.82 2.47c-.07.2.12.38.31.31l2.47-.82a.25.25 0 0 0 .1-.06L19.5 6.5m-2-2l2.32-2.32c.1-.1.26-.1.36 0l1.64 1.64c.1.1.1.26 0 .36L19.5 6.5m-2-2l2 2" stroke="currentColor"></path></svg>}
         </div>
         <hr />
       </div>

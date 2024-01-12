@@ -217,5 +217,97 @@ export function formatDate(inputDate) {
     });
   }
 
-  
-  
+export function organizeComments(comments) {
+  const ans = {}
+  comments.forEach((ele) => {
+    if (ele.parent == null) {
+      const id = ele.id;
+      ans[id] = ele;
+      ans[id]['reply'] = []
+    }
+  });
+  comments.forEach((ele)=>{
+    if(ele.parent !==null){
+      const parentId = ele.parent.id
+      ans[parentId]['reply'].push(ele)
+    }
+  })
+ console.log(ans)
+ return ans
+
+  }
+
+export function getDurationString(dateString) {
+  // Parse the input date string
+  const inputDate = new Date(dateString);
+
+  // Get the current date
+  const currentDate = new Date();
+
+  // Calculate the time difference in milliseconds
+  const timeDifference = currentDate - inputDate;
+
+  // Convert the time difference to days, weeks, and years
+  const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+  const weeks = Math.floor(days / 7);
+  const years = Math.floor(weeks / 52);
+
+  // Determine the appropriate unit and value
+  if (years > 50) {
+      return `${years} ${years === 1 ? 'year' : 'years'}`;
+  } else if (weeks > 50) {
+      return `${weeks} ${weeks === 1 ? 'week' : 'weeks'}`;
+  } else {
+      return `${days} ${days === 1 ? 'day' : 'days'}`;
+  }
+}
+
+export function formatDatetostring(dateString) {
+  const dateObject = new Date(dateString);
+
+  const year = dateObject.getFullYear();
+  const month = String(dateObject.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+  const day = String(dateObject.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+export function updatepostData(postData,slug) {
+  return new Promise((resolve, reject) => {
+    if (!postData || !postData.title || !postData.author || !postData.text || !postData.published_date || !postData.image || !postData.feature_img || !postData.post_cat || !postData.tags) {
+      reject(new Error('Invalid or missing data'));
+      return;
+    }
+    const{tags} = postData
+    postData.tags = [Number(tags)]
+    const formData = new FormData();
+    for (const key in postData) {
+      
+      formData.append(key, postData[key]);
+    }
+    
+    fetch(`http://127.0.0.1:8000/api/posts/${slug}/`, {
+      method: 'PATCH',
+      headers: {
+        // 'Content-Type': 'application/json',
+        // 'Content-Type': 'multipart/form-data; ',
+        // 'enctype': 'multipart/form-data',
+      },
+      // enctype: 'multipart/form-data',
+      body: formData,
+    })
+      .then(response => {
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        resolve(data);
+      })
+      .catch(error => {
+        reject(error);
+      });
+  });
+}
